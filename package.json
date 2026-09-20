@@ -1,0 +1,11 @@
+{
+  "name": "raging-packer",
+  "uuid": "a83d1210-1e86-4cef-a508-bf67df39fe28",
+  "version": "1.0.0",
+  "type": "module",
+  "creator": { "version": "3.8.8" },
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
+  },
+  "description": "《暴躁打包员》微信与抖音小游戏：这个包裹到底能不能发？"
+}

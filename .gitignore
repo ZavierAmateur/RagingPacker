@@ -1,0 +1,9 @@
+/library/
+/temp/
+/profiles/
+/local/
+/build/
+*.log
+
+# 软著申请中的身份证、签字件、账号资料等不得提交到 Git
+/软著材料/私密资料/
