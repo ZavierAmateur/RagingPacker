@@ -1,0 +1,59 @@
+task_id: ART-CATEGORY-001
+prompt_id: PROMPT-CATEGORY-001-v01
+asset_id: replace_me
+name_zh: 【待填写】
+purpose: 【待填写】
+
+references:
+  style: Style-Master-V1
+  category: 【待填写】
+  structure: 【待填写】
+
+output:
+  candidates: 4
+  source_size: 1024x1024
+  runtime_size: 【待填写】
+  background: transparent
+  format: PNG
+  color_space: sRGB
+  subject_coverage: 76_percent
+
+visual:
+  style: 暖色仓库喜剧扁平卡通
+  view: left-front-three-quarter
+  camera: slightly-top-down
+  lighting: top-left-45-degrees-soft
+  outline_color: "#453A35"
+  outline_weight: bold
+  shading_layers: 2
+  palette: RagingPacker-Palette-V1
+
+identity:
+  strongest_feature: 【待填写】
+
+preserve:
+  - 【待填写】
+
+change_only:
+  - 【首轮生成时可删除；修订时必填】
+
+avoid:
+  - text
+  - letters
+  - numbers
+  - logo
+  - watermark
+  - photorealistic
+  - realistic 3d render
+  - thin or inconsistent outline
+  - multiple light sources
+  - complex background
+  - cropped object
+  - dirty transparent pixels
+  - real brand
+  - copyrighted character
+
+acceptance:
+  - clean alpha edge
+  - consistent with approved style references
+  - readable at actual in-game size
