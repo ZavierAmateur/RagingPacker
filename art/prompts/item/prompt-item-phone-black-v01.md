@@ -2,7 +2,7 @@
 
 ## 状态
 
-- 当前状态：候选，等待开发者视觉验收
+- 当前状态：`ready_for_import`，尚未实际导入 FairyGUI/Cocos
 - 生成方式：OpenAI ImageGen，内置模式
 - 风格依据：`art/concepts/item/item_style_sample_board_v001.png`（Item Style Master V1）
 - 原始生成图：`art/ai-raw/item/item_phone_black_raw_v001.png`
@@ -71,4 +71,4 @@ Style lock:
 - 主体完整，没有裁切，四周保留安全边距
 - 无文字、品牌、Logo、水印或多余装饰方块
 - 三镜头方形相机岛、黄色闪光灯和深色机身在 90 × 90 下仍可辨认
-- 当前仅为概念候选；通过视觉验收后，才标记为正式冻结版本
+- 开发者视觉验收、统一技术 QA 与官方条款核验已通过；运行预览仍待导入后完成

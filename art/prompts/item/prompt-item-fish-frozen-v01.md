@@ -2,7 +2,7 @@
 
 ## 状态
 
-- 当前状态：候选，等待开发者视觉验收
+- 当前状态：`ready_for_import`，尚未实际导入 FairyGUI/Cocos
 - 生成方式：OpenAI ImageGen，内置模式
 - 风格依据：`art/concepts/item/item_style_sample_board_v001.png`（Item Style Master V1）
 - 原始生成图：`art/ai-raw/item/item_fish_frozen_raw_v001.png`
@@ -74,4 +74,4 @@ Style lock:
 - 头朝左、尾朝右，闭眼和嘴型清楚
 - 三条棕色斜纹与五枚大冰晶数量明确，在 90 × 90 下仍可辨认
 - 无血腥、鱼钩、餐盘、包装、文字、品牌、Logo 或水印
-- 当前仅为概念候选；通过视觉验收后，才标记为正式冻结版本
+- 开发者视觉验收、统一技术 QA 与官方条款核验已通过；运行预览仍待导入后完成
