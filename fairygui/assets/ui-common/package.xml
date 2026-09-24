@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="rpgcm001">
+  <resources>
+    <component id="cm001" name="CommonRoot.xml" path="/" exported="true"/>
+    <image id="hc001" name="icon_coin.png" path="/images/hud/" exported="true"/>
+    <image id="hc002" name="icon_complaint.png" path="/images/hud/" exported="true"/>
+    <image id="hc003" name="icon_day_goal_star.png" path="/images/hud/" exported="true"/>
+    <font id="ft001" name="SourceHanSansSC-Regular.otf" path="/fonts/" exported="true" renderMode="" samplePointSize="16"/>
+    <font id="ft002" name="SourceHanSansSC-Heavy.otf" path="/fonts/" exported="true" renderMode="" samplePointSize="16"/>
+    <font id="ft003" name="SmileySans-Oblique.ttf" path="/fonts/" exported="true" renderMode="" samplePointSize="16"/>
+    <component id="cc001" name="PanelCard.xml" path="/components/" exported="true"/>
+    <component id="cc002" name="ButtonPrimary.xml" path="/components/" exported="true"/>
+    <component id="cc003" name="HudStatItem.xml" path="/components/" exported="true"/>
+    <component id="cc004" name="TopHudBar.xml" path="/components/" exported="true"/>
+    <component id="cc005" name="TypographySpec.xml" path="/components/" exported="true"/>
+  </resources>
+  <publish name="" path="../assets/resources/packages/ui-common"/>
+</packageDescription>

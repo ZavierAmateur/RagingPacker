@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="750,1334">
+  <displayList>
+    <image id="n0_game" name="sceneBackground" src="gm101" fileName="images/scene/scene_community_day_bg.png" xy="0,0" size="750,1334"/>
+    <graph id="n1_game" name="warmOverlay" xy="0,0" size="750,1334" type="rect" lineSize="0" fillColor="#14fff4dc" touchable="false"/>
+    <component id="n2_game" name="topHud" src="cc004" fileName="components/TopHudBar.xml" pkg="rpgcm001" xy="15,24" size="720,72"/>
+    <component id="n3_game" name="orderBoard" src="gm010" fileName="components/OrderBoard.xml" xy="24,112" size="702,390"/>
+    <component id="n4_game" name="conveyor" src="gm011" fileName="components/ConveyorBelt.xml" xy="0,508" size="750,138"/>
+    <component id="n5_game" name="boxArea" src="gm012" fileName="components/BoxWorkArea.xml" xy="24,648" size="702,300"/>
+    <component id="n6_game" name="selectorPanel" src="gm013" fileName="components/SelectorPanel.xml" xy="24,964" size="702,204"/>
+    <text id="n7_game" name="actionHint" xy="44,1172" size="662,30" font="ui://rpgcm001ft001" fontSize="20" color="#70462d" align="center" vAlign="middle" autoSize="shrink" singleLine="true" text="请先放入订单商品，再核对纸箱、包装和标签"/>
+    <component id="n8_game" name="shipButton" src="cc002" fileName="components/ButtonPrimary.xml" pkg="rpgcm001" xy="32,1210" size="686,96">
+      <Button title="封箱发货" titleFontSize="36"/>
+    </component>
+  </displayList>
+</component>

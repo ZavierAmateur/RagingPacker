@@ -1,16 +1,37 @@
 import {
-  _decorator, BlockInputEvents, Camera, Canvas, Color, Component, Graphics,
+  _decorator, BlockInputEvents, Camera, Canvas, Color, Component, error, Graphics,
   HorizontalTextAlignment, Label, Layers, Node, ResolutionPolicy, tween,
-  UITransform, Vec3, VerticalTextAlignment, view, profiler,
+  UITransform, Vec3, VerticalTextAlignment, view, profiler, log,
 } from 'cc';
+import * as fgui from 'fairygui-cc';
 import {
   BoxId, evaluatePackage, getBoxCapacity, ItemId, ITEMS, itemById,
   LabelId, LEVELS, LevelDefinition, Order, ordersForLevel, usedCapacity, WrapId,
 } from './GameModel';
+import {
+  FAIRYGUI_ITEM_RESOURCE_NAMES,
+  FAIRYGUI_ORDER_ITEM_SLOTS,
+  fairyGuiConveyorPool,
+  fairyGuiConveyorWindow,
+  fairyGuiFirstExpiredOrderIndex,
+  fairyGuiOrderItems,
+  fairyGuiOrderQueue,
+  fairyGuiOrderRequirements,
+  fairyGuiOrderTimer,
+  fairyGuiSelectionNames,
+  nextFairyGuiBox,
+  nextFairyGuiLabel,
+  nextFairyGuiWrap,
+} from './FairyGuiOrderPresenter';
 
 const { ccclass } = _decorator;
 const W = 750;
 const H = 1334;
+const FGUI_PACKAGES = [
+  'packages/ui-common/ui-common',
+  'packages/ui-game/ui-game',
+  'packages/ui-result/ui-result',
+] as const;
 const C = {
   bg: new Color(246, 241, 224), ink: new Color(42, 48, 54), muted: new Color(117, 124, 125),
   orange: new Color(255, 145, 64), orangeDark: new Color(206, 87, 39), yellow: new Color(255, 207, 69),
@@ -21,8 +42,49 @@ const C = {
 
 interface BeltItem { node: Node; id: ItemId; speed: number; }
 
+function colorFromHex(hex: string): Color {
+  const value = Number.parseInt(hex.replace('#', ''), 16);
+  return new Color((value >> 16) & 255, (value >> 8) & 255, value & 255);
+}
+
 @ccclass('GameRoot')
 export class GameRoot extends Component {
+  private fairyGuiView: fgui.GComponent | null = null;
+  private fairyGuiTopHud: fgui.GComponent | null = null;
+  private fairyGuiOrderBoard: fgui.GComponent | null = null;
+  private fairyGuiSelectorPanel: fgui.GComponent | null = null;
+  private fairyGuiConveyor: fgui.GComponent | null = null;
+  private fairyGuiBoxArea: fgui.GComponent | null = null;
+  private fairyGuiResultOverlay: fgui.GComponent | null = null;
+  private fairyGuiOrderPool: Order[] = [];
+  private fairyGuiOrders: Order[] = [];
+  private fairyGuiContentsByOrder: Array<Partial<Record<ItemId, number>>> = [];
+  private fairyGuiSecondsByOrder: number[] = [];
+  private fairyGuiNextOrderCursor = 0;
+  private fairyGuiSelectedOrderIndex = 0;
+  private fairyGuiItemLoaders: fgui.GLoader[] = [];
+  private fairyGuiItemFallbackBackgrounds: fgui.GGraph[] = [];
+  private fairyGuiItemFallbackLabels: fgui.GTextField[] = [];
+  private fairyGuiTicketLoaders: fgui.GLoader[] = [];
+  private fairyGuiTicketFallbackBackgrounds: fgui.GGraph[] = [];
+  private fairyGuiTicketFallbackLabels: fgui.GTextField[] = [];
+  private fairyGuiTicketTimeLabels: fgui.GTextField[] = [];
+  private fairyGuiConveyorItemPool: ItemId[] = [];
+  private fairyGuiConveyorVisibleItems: ItemId[] = [];
+  private fairyGuiConveyorCursor = 0;
+  private fairyGuiConveyorRefreshSeconds = 0;
+  private fairyGuiConveyorLoaders: fgui.GLoader[] = [];
+  private fairyGuiConveyorFallbackBackgrounds: fgui.GGraph[] = [];
+  private fairyGuiConveyorFallbackLabels: fgui.GTextField[] = [];
+  private fairyGuiConveyorNameBackgrounds: fgui.GGraph[] = [];
+  private fairyGuiConveyorNameLabels: fgui.GTextField[] = [];
+  private fairyGuiBoxLoaders: fgui.GLoader[] = [];
+  private fairyGuiBoxFallbackBackgrounds: fgui.GGraph[] = [];
+  private fairyGuiBoxFallbackLabels: fgui.GTextField[] = [];
+  private fairyGuiBoxCountBackgrounds: fgui.GGraph[] = [];
+  private fairyGuiBoxCountLabels: fgui.GTextField[] = [];
+  private legacyPrototypeActive = false;
+  private destroyed = false;
   private canvas!: Node;
   private belt!: Node;
   private boxArea!: Node;
@@ -58,12 +120,878 @@ export class GameRoot extends Component {
     view.setDesignResolutionSize(W, H, ResolutionPolicy.FIXED_WIDTH);
     profiler.hideStats();
     this.createCanvas();
+    void this.startFairyGui();
+  }
+
+  protected onDestroy(): void {
+    this.destroyed = true;
+    this.fairyGuiResultOverlay?.dispose();
+    this.fairyGuiResultOverlay = null;
+    this.fairyGuiView?.dispose();
+    this.fairyGuiView = null;
+  }
+
+  private async startFairyGui(): Promise<void> {
+    try {
+      fgui.GRoot.create();
+      for (const packagePath of FGUI_PACKAGES) await this.loadFairyGuiPackage(packagePath);
+      if (this.destroyed) return;
+
+      const gamePage = fgui.UIPackage.createObject('ui-game', 'GamePage').asCom;
+      if (!gamePage) throw new Error('ui-game/GamePage 创建失败');
+      gamePage.makeFullScreen();
+      fgui.GRoot.inst.addChild(gamePage);
+      this.fairyGuiView = gamePage;
+      this.bindFairyGuiGamePage(gamePage);
+      log('[RagingPacker] FairyGUI ui-game/GamePage 已加载');
+    } catch (reason) {
+      if (this.destroyed) return;
+      this.fairyGuiView?.dispose();
+      this.fairyGuiView = null;
+      error('[RagingPacker] FairyGUI 加载失败，回退到旧原型：', reason);
+      this.startLegacyPrototype();
+    }
+  }
+
+  private loadFairyGuiPackage(packagePath: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      fgui.UIPackage.loadPackage(packagePath, (loadError) => {
+        if (loadError) reject(loadError);
+        else resolve();
+      });
+    });
+  }
+
+  private bindFairyGuiGamePage(gamePage: fgui.GComponent): void {
+    this.currentLevel = LEVELS[0];
+    this.coins = 0;
+    this.complaints = 0;
+    this.successful = 0;
+    this.completed = 0;
+    this.combo = 0;
+    this.fairyGuiOrderPool = ordersForLevel(this.currentLevel.id);
+    this.fairyGuiOrders = fairyGuiOrderQueue(this.currentLevel.id);
+    this.fairyGuiContentsByOrder = this.fairyGuiOrders.map(() => ({}));
+    this.fairyGuiSecondsByOrder = this.fairyGuiOrders.map(
+      (order) => order.seconds * this.currentLevel.timeScale,
+    );
+    this.fairyGuiNextOrderCursor = this.fairyGuiOrders.length;
+    this.fairyGuiSelectedOrderIndex = 0;
+
+    this.fairyGuiTopHud = gamePage.getChild('topHud').asCom;
+    this.fairyGuiOrderBoard = gamePage.getChild('orderBoard').asCom;
+    this.fairyGuiSelectorPanel = gamePage.getChild('selectorPanel').asCom;
+    this.fairyGuiConveyor = gamePage.getChild('conveyor').asCom;
+    this.fairyGuiBoxArea = gamePage.getChild('boxArea').asCom;
+    this.createFairyGuiRuntimeIcons(this.fairyGuiOrderBoard);
+    this.bindFairyGuiOrderTabs(this.fairyGuiOrderBoard);
+    this.bindFairyGuiSelectors(this.fairyGuiSelectorPanel);
+    this.bindFairyGuiConveyor(this.fairyGuiConveyor);
+    this.createFairyGuiBoxSlots(this.fairyGuiBoxArea);
+    gamePage.getChild('shipButton').onClick(() => this.finishFairyGuiOrder(), this);
+    this.refreshFairyGuiHud();
+    this.selectFairyGuiOrder(0);
+    this.refreshFairyGuiSelectors();
+  }
+
+  private createFairyGuiRuntimeIcons(orderBoard: fgui.GComponent): void {
+    const itemIconPositions = [
+      [254, 96],
+      [480, 96],
+      [254, 208],
+      [480, 208],
+    ] as const;
+    const ticketIconPositions = [
+      [73, 25],
+      [303, 25],
+      [533, 25],
+    ] as const;
+    const ticketTimerPositions = [126, 356, 586] as const;
+
+    FAIRYGUI_ORDER_ITEM_SLOTS.forEach((slotName, index) => {
+      orderBoard.getChild(slotName).visible = false;
+      const fallbackBackground = new fgui.GGraph();
+      fallbackBackground.name = `runtimeItemFallbackBg${index + 1}`;
+      fallbackBackground.setPosition(itemIconPositions[index][0] + 8, itemIconPositions[index][1] + 8);
+      fallbackBackground.setSize(66, 66);
+      fallbackBackground.drawRect(2, C.white, C.muted, [17]);
+      fallbackBackground.visible = false;
+      orderBoard.addChild(fallbackBackground);
+      this.fairyGuiItemFallbackBackgrounds.push(fallbackBackground);
+
+      const fallbackLabel = this.addFairyGuiText(
+        orderBoard,
+        `runtimeItemFallback${index + 1}`,
+        '',
+        itemIconPositions[index][0] + 8,
+        itemIconPositions[index][1] + 8,
+        66,
+        66,
+        28,
+        C.white,
+        true,
+      );
+      fallbackLabel.visible = false;
+      this.fairyGuiItemFallbackLabels.push(fallbackLabel);
+
+      const loader = new fgui.GLoader();
+      loader.name = `runtimeItemIcon${index + 1}`;
+      loader.setPosition(itemIconPositions[index][0], itemIconPositions[index][1]);
+      loader.setSize(82, 82);
+      loader.fill = fgui.LoaderFillType.Scale;
+      loader.shrinkOnly = true;
+      orderBoard.addChild(loader);
+      this.fairyGuiItemLoaders.push(loader);
+    });
+
+    ticketIconPositions.forEach(([x, y], index) => {
+      orderBoard.getChild(`ticket0${index + 1}Icon`).visible = false;
+      const fallbackBackground = new fgui.GGraph();
+      fallbackBackground.name = `runtimeTicketFallbackBg${index + 1}`;
+      fallbackBackground.setPosition(x + 3, y + 3);
+      fallbackBackground.setSize(36, 36);
+      fallbackBackground.drawEllipse(1, C.white, C.muted);
+      fallbackBackground.visible = false;
+      orderBoard.addChild(fallbackBackground);
+      this.fairyGuiTicketFallbackBackgrounds.push(fallbackBackground);
+
+      const fallbackLabel = this.addFairyGuiText(
+        orderBoard,
+        `runtimeTicketFallback${index + 1}`,
+        '',
+        x + 3,
+        y + 3,
+        36,
+        36,
+        15,
+        C.white,
+        true,
+      );
+      fallbackLabel.visible = false;
+      this.fairyGuiTicketFallbackLabels.push(fallbackLabel);
+
+      const loader = new fgui.GLoader();
+      loader.name = `runtimeTicketIcon${index + 1}`;
+      loader.setPosition(x, y);
+      loader.setSize(42, 42);
+      loader.fill = fgui.LoaderFillType.Scale;
+      loader.shrinkOnly = true;
+      orderBoard.addChild(loader);
+      this.fairyGuiTicketLoaders.push(loader);
+
+      const timeLabel = new fgui.GTextField();
+      timeLabel.name = `runtimeTicketTime${index + 1}`;
+      timeLabel.setPosition(ticketTimerPositions[index], 17);
+      timeLabel.setSize(82, 22);
+      timeLabel.font = 'ui://rpgcm001ft002';
+      timeLabel.fontSize = 15;
+      timeLabel.color = new Color(90, 48, 28);
+      timeLabel.align = HorizontalTextAlignment.CENTER;
+      timeLabel.verticalAlign = VerticalTextAlignment.CENTER;
+      timeLabel.singleLine = true;
+      orderBoard.addChild(timeLabel);
+      this.fairyGuiTicketTimeLabels.push(timeLabel);
+    });
+  }
+
+  private bindFairyGuiOrderTabs(orderBoard: fgui.GComponent): void {
+    const positions = [16, 246, 476] as const;
+    positions.forEach((x, index) => {
+      const hitArea = new fgui.GGraph();
+      hitArea.name = `runtimeTicketHit${index + 1}`;
+      hitArea.setPosition(x, 20);
+      hitArea.setSize(210, 54);
+      hitArea.drawRect(0, new Color(0, 0, 0, 0), new Color(255, 255, 255, 0), [13]);
+      hitArea.onClick(() => this.selectFairyGuiOrder(index), this);
+      orderBoard.addChild(hitArea);
+    });
+  }
+
+  private bindFairyGuiSelectors(selectorPanel: fgui.GComponent): void {
+    const selectors = [
+      { name: 'box', x: 8, action: () => { this.selectedBox = nextFairyGuiBox(this.selectedBox); } },
+      { name: 'wrap', x: 240, action: () => { this.selectedWrap = nextFairyGuiWrap(this.selectedWrap); } },
+      { name: 'label', x: 472, action: () => { this.selectedLabel = nextFairyGuiLabel(this.selectedLabel); } },
+    ] as const;
+
+    selectors.forEach(({ name, x, action }) => {
+      const hitArea = new fgui.GGraph();
+      hitArea.name = `runtime${name[0].toUpperCase()}${name.slice(1)}Hit`;
+      hitArea.setPosition(x, 8);
+      hitArea.setSize(222, 188);
+      hitArea.drawRect(0, new Color(0, 0, 0, 0), new Color(255, 255, 255, 0), [16]);
+      hitArea.onClick(() => {
+        action();
+        this.refreshFairyGuiSelectors();
+      }, this);
+      selectorPanel.addChild(hitArea);
+    });
+  }
+
+  private bindFairyGuiConveyor(conveyor: fgui.GComponent): void {
+    for (const name of ['phoneItem', 'chargerItem', 'glassItem', 'fishItem']) {
+      conveyor.getChild(name).visible = false;
+    }
+    const positions = [20, 201, 382, 563] as const;
+    positions.forEach((x, index) => {
+      const fallbackBackground = new fgui.GGraph();
+      fallbackBackground.name = `runtimeConveyorFallbackBg${index + 1}`;
+      fallbackBackground.setPosition(x + 28, 8);
+      fallbackBackground.setSize(80, 80);
+      fallbackBackground.drawRect(3, C.white, C.muted, [22]);
+      conveyor.addChild(fallbackBackground);
+      this.fairyGuiConveyorFallbackBackgrounds.push(fallbackBackground);
+
+      const fallbackLabel = this.addFairyGuiText(
+        conveyor,
+        `runtimeConveyorFallback${index + 1}`,
+        '',
+        x + 28,
+        8,
+        80,
+        80,
+        30,
+        C.white,
+        true,
+      );
+      this.fairyGuiConveyorFallbackLabels.push(fallbackLabel);
+
+      const loader = new fgui.GLoader();
+      loader.name = `runtimeConveyorItem${index + 1}`;
+      loader.setPosition(x, -3);
+      loader.setSize(136, 136);
+      loader.fill = fgui.LoaderFillType.Scale;
+      loader.shrinkOnly = true;
+      conveyor.addChild(loader);
+      this.fairyGuiConveyorLoaders.push(loader);
+
+      const nameBackground = new fgui.GGraph();
+      nameBackground.name = `runtimeConveyorNameBg${index + 1}`;
+      nameBackground.setPosition(x + 7, 91);
+      nameBackground.setSize(122, 25);
+      nameBackground.drawRect(0, new Color(0, 0, 0, 0), new Color(31, 37, 42, 220), [10]);
+      conveyor.addChild(nameBackground);
+      this.fairyGuiConveyorNameBackgrounds.push(nameBackground);
+
+      const nameLabel = this.addFairyGuiText(
+        conveyor,
+        `runtimeConveyorName${index + 1}`,
+        '',
+        x + 9,
+        91,
+        118,
+        25,
+        15,
+        C.white,
+        true,
+      );
+      nameLabel.autoSize = fgui.AutoSizeType.Shrink;
+      nameLabel.singleLine = true;
+      this.fairyGuiConveyorNameLabels.push(nameLabel);
+
+      const hitArea = new fgui.GGraph();
+      hitArea.name = `runtimeConveyorHit${index + 1}`;
+      hitArea.setPosition(x, 0);
+      hitArea.setSize(136, 120);
+      hitArea.drawRect(0, new Color(0, 0, 0, 0), new Color(255, 255, 255, 0), [12]);
+      hitArea.onClick(() => {
+        const id = this.fairyGuiConveyorVisibleItems[index];
+        if (id) this.addFairyGuiItem(id);
+      }, this);
+      conveyor.addChild(hitArea);
+    });
+    this.refreshFairyGuiConveyorPool(true);
+  }
+
+  private refreshFairyGuiConveyorPool(resetCursor = false): void {
+    const nextPool = fairyGuiConveyorPool(this.fairyGuiOrders);
+    const changed = nextPool.join(',') !== this.fairyGuiConveyorItemPool.join(',');
+    this.fairyGuiConveyorItemPool = nextPool;
+    if (changed || resetCursor) this.fairyGuiConveyorCursor = 0;
+    this.rotateFairyGuiConveyor();
+  }
+
+  private rotateFairyGuiConveyor(): void {
+    this.fairyGuiConveyorVisibleItems = fairyGuiConveyorWindow(
+      this.fairyGuiConveyorItemPool,
+      this.fairyGuiConveyorCursor,
+    );
+    if (this.fairyGuiConveyorItemPool.length > 0) {
+      this.fairyGuiConveyorCursor =
+        (this.fairyGuiConveyorCursor + 1) % this.fairyGuiConveyorItemPool.length;
+    }
+    this.fairyGuiConveyorRefreshSeconds = 2.4;
+    this.fairyGuiConveyorLoaders.forEach((loader, index) => {
+      const id = this.fairyGuiConveyorVisibleItems[index];
+      const item = id ? itemById(id) : null;
+      const resourceName = id ? FAIRYGUI_ITEM_RESOURCE_NAMES[id] : null;
+      loader.url = resourceName ? fgui.UIPackage.getItemURL('ui-game', resourceName) : null;
+      loader.visible = Boolean(resourceName);
+      this.fairyGuiConveyorFallbackBackgrounds[index].visible = Boolean(item && !resourceName);
+      this.fairyGuiConveyorFallbackLabels[index].visible = Boolean(item && !resourceName);
+      this.fairyGuiConveyorNameBackgrounds[index].visible = Boolean(item);
+      this.fairyGuiConveyorNameLabels[index].visible = Boolean(item);
+      if (item) {
+        this.fairyGuiConveyorFallbackBackgrounds[index].color = colorFromHex(item.color);
+        this.fairyGuiConveyorFallbackLabels[index].text = item.glyph;
+        this.fairyGuiConveyorNameLabels[index].text = item.name;
+      }
+    });
+  }
+
+  private createFairyGuiBoxSlots(boxArea: fgui.GComponent): void {
+    const slotPositions = [145, 250, 355, 460] as const;
+    slotPositions.forEach((x, index) => {
+      const fallbackBackground = new fgui.GGraph();
+      fallbackBackground.name = `runtimeBoxFallbackBg${index + 1}`;
+      fallbackBackground.setPosition(x + 18, 84);
+      fallbackBackground.setSize(58, 58);
+      fallbackBackground.drawRect(2, C.white, C.muted, [15]);
+      fallbackBackground.visible = false;
+      boxArea.addChild(fallbackBackground);
+      this.fairyGuiBoxFallbackBackgrounds.push(fallbackBackground);
+
+      const fallbackLabel = this.addFairyGuiText(
+        boxArea,
+        `runtimeBoxFallback${index + 1}`,
+        '',
+        x + 18,
+        84,
+        58,
+        58,
+        23,
+        C.white,
+        true,
+      );
+      fallbackLabel.visible = false;
+      this.fairyGuiBoxFallbackLabels.push(fallbackLabel);
+
+      const loader = new fgui.GLoader();
+      loader.name = `runtimeBoxItem${index + 1}`;
+      loader.setPosition(x + 9, 79);
+      loader.setSize(76, 70);
+      loader.fill = fgui.LoaderFillType.Scale;
+      loader.shrinkOnly = true;
+      boxArea.addChild(loader);
+      this.fairyGuiBoxLoaders.push(loader);
+
+      const countBackground = new fgui.GGraph();
+      countBackground.name = `runtimeBoxCountBg${index + 1}`;
+      countBackground.setPosition(x + 58, 122);
+      countBackground.setSize(32, 26);
+      countBackground.drawEllipse(0, new Color(0, 0, 0, 0), new Color(255, 90, 53));
+      boxArea.addChild(countBackground);
+      this.fairyGuiBoxCountBackgrounds.push(countBackground);
+
+      const countLabel = new fgui.GTextField();
+      countLabel.name = `runtimeBoxCount${index + 1}`;
+      countLabel.setPosition(x + 58, 121);
+      countLabel.setSize(32, 28);
+      countLabel.fontSize = 17;
+      countLabel.color = C.white;
+      countLabel.align = HorizontalTextAlignment.CENTER;
+      countLabel.verticalAlign = VerticalTextAlignment.CENTER;
+      countLabel.singleLine = true;
+      boxArea.addChild(countLabel);
+      this.fairyGuiBoxCountLabels.push(countLabel);
+
+      const hitArea = new fgui.GGraph();
+      hitArea.name = `runtimeBoxSlotHit${index + 1}`;
+      hitArea.setPosition(x, 77);
+      hitArea.setSize(94, 76);
+      hitArea.drawRect(0, new Color(0, 0, 0, 0), new Color(255, 255, 255, 0), [8]);
+      hitArea.onClick(() => this.removeFairyGuiItemAt(index), this);
+      boxArea.addChild(hitArea);
+    });
+  }
+
+  private addFairyGuiItem(id: ItemId): void {
+    const next = { ...this.contents, [id]: (this.contents[id] ?? 0) + 1 };
+    if (usedCapacity(next) > getBoxCapacity(this.selectedBox)) {
+      const selection = fairyGuiSelectionNames(
+        this.selectedBox,
+        this.selectedWrap,
+        this.selectedLabel,
+      );
+      this.refreshFairyGuiActionHint(`${selection.box}容量不足，请换大箱或取出商品`);
+      return;
+    }
+    this.contents = next;
+    this.fairyGuiContentsByOrder[this.fairyGuiSelectedOrderIndex] = next;
+    this.refreshFairyGuiBoxContents();
+    this.refreshFairyGuiActionHint(`已放入 ${itemById(id).name} ×${next[id]}`);
+  }
+
+  private removeFairyGuiItemAt(index: number): void {
+    const entry = (Object.entries(this.contents) as [ItemId, number][])[index];
+    if (!entry) return;
+    const [id, count] = entry;
+    const next = { ...this.contents };
+    if (count <= 1) delete next[id];
+    else next[id] = count - 1;
+    this.contents = next;
+    this.fairyGuiContentsByOrder[this.fairyGuiSelectedOrderIndex] = next;
+    this.refreshFairyGuiBoxContents();
+    this.refreshFairyGuiActionHint(`已取出 ${itemById(id).name}`);
+  }
+
+  private finishFairyGuiOrder(): void {
+    if (this.fairyGuiResultOverlay) return;
+    this.secondsLeft = this.fairyGuiSecondsByOrder[this.fairyGuiSelectedOrderIndex] ?? 0;
+    const result = evaluatePackage(
+      this.order,
+      this.contents,
+      this.selectedBox,
+      this.selectedWrap,
+      this.selectedLabel,
+      this.secondsLeft,
+    );
+    this.completeFairyGuiOrder(result);
+  }
+
+  private completeFairyGuiOrder(result: {
+    perfect: boolean;
+    complaint: boolean;
+    reason: string;
+    review: string;
+    coins: number;
+  }): void {
+    if (result.perfect) {
+      this.coins += result.coins;
+      this.combo++;
+      this.successful++;
+      this.setFairyGuiExpression('success');
+    } else {
+      if (result.complaint) this.complaints++;
+      this.combo = 0;
+      this.setFairyGuiExpression(result.complaint ? 'rage' : 'failed');
+    }
+    this.completed++;
+    this.refreshFairyGuiHud();
+    this.showFairyGuiResult(result);
+  }
+
+  private timeoutFairyGuiOrder(index: number): void {
+    if (this.fairyGuiResultOverlay || index < 0 || index >= this.fairyGuiOrders.length) return;
+    this.selectFairyGuiOrder(index);
+    this.completeFairyGuiOrder({
+      perfect: false,
+      complaint: true,
+      reason: '订单超时，已自动取消',
+      review: '等太久了，这个包裹今天还能发出来吗？',
+      coins: 0,
+    });
+  }
+
+  private showFairyGuiResult(result: {
+    perfect: boolean;
+    complaint: boolean;
+    reason: string;
+    review: string;
+    coins: number;
+  }): void {
+    const overlay = new fgui.GComponent();
+    overlay.name = 'runtimeResultOverlay';
+    overlay.setSize(W, H);
+    const blocker = new fgui.GGraph();
+    blocker.name = 'blocker';
+    blocker.setSize(W, H);
+    blocker.drawRect(0, new Color(0, 0, 0, 0), new Color(28, 22, 18, 178));
+    overlay.addChild(blocker);
+
+    const card = new fgui.GGraph();
+    card.name = 'card';
+    card.setPosition(55, 294);
+    card.setSize(640, 650);
+    card.drawRect(5, new Color(185, 106, 49), new Color(255, 250, 240), [34]);
+    overlay.addChild(card);
+
+    const titleColor = result.perfect ? new Color(52, 155, 91) : new Color(207, 67, 55);
+    this.addFairyGuiText(
+      overlay,
+      'title',
+      result.perfect ? '发货成功！' : '收到投诉！',
+      95,
+      340,
+      560,
+      72,
+      44,
+      titleColor,
+      true,
+    );
+    this.addFairyGuiText(
+      overlay,
+      'reason',
+      result.reason,
+      95,
+      426,
+      560,
+      56,
+      30,
+      new Color(78, 46, 30),
+      true,
+    );
+    this.addFairyGuiText(
+      overlay,
+      'stat',
+      result.perfect
+        ? `金币 +${result.coins}　完美连单 ×${this.combo}`
+        : `投诉 +${result.complaint ? 1 : 0}　当前 ${this.complaints}/3`,
+      95,
+      490,
+      560,
+      48,
+      24,
+      result.perfect ? new Color(184, 117, 28) : new Color(156, 41, 41),
+      true,
+    );
+
+    const reviewCard = new fgui.GGraph();
+    reviewCard.name = 'reviewCard';
+    reviewCard.setPosition(100, 566);
+    reviewCard.setSize(550, 184);
+    reviewCard.drawRect(2, new Color(231, 197, 156), new Color(255, 244, 223), [22]);
+    overlay.addChild(reviewCard);
+    this.addFairyGuiText(
+      overlay,
+      'reviewTitle',
+      '买家评价',
+      125,
+      578,
+      500,
+      40,
+      20,
+      new Color(112, 70, 45),
+      true,
+    );
+    this.addFairyGuiText(
+      overlay,
+      'review',
+      `“${result.review}”`,
+      130,
+      622,
+      490,
+      105,
+      25,
+      new Color(78, 46, 30),
+      false,
+    );
+
+    const done = this.complaints >= 3 || this.successful >= this.currentLevel.target;
+    const actionButton = fgui.UIPackage.createObject('ui-common', 'ButtonPrimary') as fgui.GButton;
+    actionButton.name = 'actionButton';
+    actionButton.setPosition(92, 810);
+    actionButton.setSize(566, 84);
+    actionButton.title = done ? '查看今日结算' : '下一单';
+    actionButton.onClick(() => this.continueAfterFairyGuiResult(done), this);
+    overlay.addChild(actionButton);
+
+    fgui.GRoot.inst.addChild(overlay);
+    this.fairyGuiResultOverlay = overlay;
+  }
+
+  private addFairyGuiText(
+    parent: fgui.GComponent,
+    name: string,
+    text: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    fontSize: number,
+    color: Color,
+    heavy: boolean,
+  ): fgui.GTextField {
+    const field = new fgui.GTextField();
+    field.name = name;
+    field.setPosition(x, y);
+    field.setSize(width, height);
+    field.text = text;
+    field.font = heavy ? 'ui://rpgcm001ft002' : 'ui://rpgcm001ft001';
+    field.fontSize = fontSize;
+    field.color = color;
+    field.align = HorizontalTextAlignment.CENTER;
+    field.verticalAlign = VerticalTextAlignment.CENTER;
+    field.singleLine = false;
+    parent.addChild(field);
+    return field;
+  }
+
+  private continueAfterFairyGuiResult(done: boolean): void {
+    this.fairyGuiResultOverlay?.dispose();
+    this.fairyGuiResultOverlay = null;
+    if (done) {
+      this.showFairyGuiDaySummary();
+      return;
+    }
+
+    const finishedIndex = this.fairyGuiSelectedOrderIndex;
+    this.fairyGuiOrders[finishedIndex] =
+      this.fairyGuiOrderPool[this.fairyGuiNextOrderCursor % this.fairyGuiOrderPool.length];
+    this.fairyGuiNextOrderCursor++;
+    this.fairyGuiContentsByOrder[finishedIndex] = {};
+    this.fairyGuiSecondsByOrder[finishedIndex] =
+      this.fairyGuiOrders[finishedIndex].seconds * this.currentLevel.timeScale;
+    this.refreshFairyGuiConveyorPool();
+    this.selectedBox = 'small';
+    this.selectedWrap = 'none';
+    this.selectedLabel = 'none';
+    this.setFairyGuiExpression('focused');
+    this.selectFairyGuiOrder((finishedIndex + 1) % this.fairyGuiOrders.length);
+    this.refreshFairyGuiSelectors();
+  }
+
+  private showFairyGuiDaySummary(): void {
+    const passed = this.successful >= this.currentLevel.target;
+    const summary = {
+      perfect: passed,
+      complaint: !passed,
+      reason: passed ? '今日目标完成！' : '投诉过多，提前下班',
+      review: `完成 ${this.successful}/${this.currentLevel.target} 单 · 收入 ${this.coins} 金币`,
+      coins: 0,
+    };
+    this.showFairyGuiResult(summary);
+    const button = this.fairyGuiResultOverlay?.getChild('actionButton') as fgui.GButton | undefined;
+    if (button) {
+      button.clearClick();
+      button.title = '重新开始';
+      button.onClick(() => this.restartFairyGuiDay(), this);
+    }
+  }
+
+  private restartFairyGuiDay(): void {
+    this.fairyGuiResultOverlay?.dispose();
+    this.fairyGuiResultOverlay = null;
+    this.coins = 0;
+    this.complaints = 0;
+    this.successful = 0;
+    this.completed = 0;
+    this.combo = 0;
+    this.fairyGuiOrderPool = ordersForLevel(this.currentLevel.id);
+    this.fairyGuiOrders = fairyGuiOrderQueue(this.currentLevel.id);
+    this.fairyGuiContentsByOrder = this.fairyGuiOrders.map(() => ({}));
+    this.fairyGuiSecondsByOrder = this.fairyGuiOrders.map(
+      (order) => order.seconds * this.currentLevel.timeScale,
+    );
+    this.fairyGuiNextOrderCursor = this.fairyGuiOrders.length;
+    this.selectedBox = 'small';
+    this.selectedWrap = 'none';
+    this.selectedLabel = 'none';
+    this.refreshFairyGuiHud();
+    this.refreshFairyGuiConveyorPool(true);
+    this.setFairyGuiExpression('calm');
+    this.selectFairyGuiOrder(0);
+    this.refreshFairyGuiSelectors();
+  }
+
+  private setFairyGuiExpression(page: string): void {
+    const portrait = this.fairyGuiOrderBoard?.getChild('characterPortrait').asCom;
+    if (!portrait) return;
+    portrait.getController('expression').selectedPage = page;
+  }
+
+  private selectFairyGuiOrder(index: number): void {
+    if (!this.fairyGuiOrderBoard || index < 0 || index >= this.fairyGuiOrders.length) return;
+    this.fairyGuiSelectedOrderIndex = index;
+    this.order = this.fairyGuiOrders[index];
+    this.contents = this.fairyGuiContentsByOrder[index] ?? {};
+    this.secondsLeft = this.fairyGuiSecondsByOrder[index] ?? 0;
+    this.refreshFairyGuiOrderTabs();
+    this.refreshFairyGuiCurrentOrder();
+    this.refreshFairyGuiBoxContents();
+  }
+
+  private refreshFairyGuiHud(): void {
+    if (!this.fairyGuiTopHud) return;
+    this.fairyGuiTopHud.getChild('goalValue').text = `${this.successful}/${this.currentLevel.target}`;
+    this.fairyGuiTopHud.getChild('coinValue').text = this.coins.toLocaleString('zh-CN');
+    this.fairyGuiTopHud.getChild('complaintValue').text = `${this.complaints}/3`;
+  }
+
+  private refreshFairyGuiOrderTabs(): void {
+    if (!this.fairyGuiOrderBoard) return;
+    this.fairyGuiOrders.forEach((order, index) => {
+      const prefix = `ticket0${index + 1}`;
+      const selected = index === this.fairyGuiSelectedOrderIndex;
+      (this.fairyGuiOrderBoard!.getChild(prefix) as fgui.GGraph).color = selected
+        ? new Color(255, 139, 50)
+        : new Color(255, 253, 247);
+      const number = this.fairyGuiOrderBoard!.getChild(`${prefix}No`) as fgui.GTextField;
+      number.text = `${index + 1}`.padStart(2, '0');
+      number.color = selected ? C.white : new Color(90, 48, 28);
+
+      const firstItem = fairyGuiOrderItems(order)[0];
+      const ticketLoader = this.fairyGuiTicketLoaders[index];
+      ticketLoader.url = firstItem.resourceName
+        ? fgui.UIPackage.getItemURL('ui-game', firstItem.resourceName)
+        : null;
+      ticketLoader.visible = Boolean(firstItem.resourceName);
+      const ticketFallbackBackground = this.fairyGuiTicketFallbackBackgrounds[index];
+      const ticketFallbackLabel = this.fairyGuiTicketFallbackLabels[index];
+      const showTicketFallback = !firstItem.resourceName;
+      ticketFallbackBackground.visible = showTicketFallback;
+      ticketFallbackLabel.visible = showTicketFallback;
+      if (showTicketFallback) {
+        const item = itemById(firstItem.id);
+        ticketFallbackBackground.color = colorFromHex(item.color);
+        ticketFallbackLabel.text = item.glyph;
+      }
+
+    });
+    this.refreshFairyGuiOrderTimers();
+  }
+
+  private refreshFairyGuiOrderTimers(): void {
+    if (!this.fairyGuiOrderBoard) return;
+    this.fairyGuiOrders.forEach((order, index) => {
+      const prefix = `ticket0${index + 1}`;
+      const selected = index === this.fairyGuiSelectedOrderIndex;
+      const timeFill = this.fairyGuiOrderBoard!.getChild(`${prefix}TimeFill`);
+      const timer = fairyGuiOrderTimer(
+        this.fairyGuiSecondsByOrder[index] ?? 0,
+        order.seconds * this.currentLevel.timeScale,
+      );
+      timeFill.width = Math.round(78 * timer.ratio);
+      const timerColor = timer.urgency === 'urgent'
+        ? new Color(231, 83, 83)
+        : timer.urgency === 'warning'
+          ? new Color(255, 190, 55)
+          : new Color(113, 178, 91);
+      (timeFill as fgui.GGraph).color = timerColor;
+      const timeLabel = this.fairyGuiTicketTimeLabels[index];
+      timeLabel.text = `${timer.seconds}s`;
+      timeLabel.color = timer.urgency === 'urgent'
+        ? new Color(196, 48, 48)
+        : selected ? C.white : new Color(90, 48, 28);
+    });
+  }
+
+  private refreshFairyGuiCurrentOrder(): void {
+    if (!this.fairyGuiView || !this.fairyGuiOrderBoard) return;
+    const items = fairyGuiOrderItems(this.order);
+    FAIRYGUI_ORDER_ITEM_SLOTS.forEach((slotName, index) => {
+      const item = items[index];
+      const prefix = slotName;
+      const background = this.fairyGuiOrderBoard!.getChild(`${prefix}Bg`);
+      const name = this.fairyGuiOrderBoard!.getChild(`${prefix}Name`);
+      const countBackground = this.fairyGuiOrderBoard!.getChild(`${prefix}CountBg`);
+      const count = this.fairyGuiOrderBoard!.getChild(`${prefix}Count`);
+      const loader = this.fairyGuiItemLoaders[index];
+      const visible = Boolean(item);
+      background.visible = visible;
+      name.visible = visible;
+      countBackground.visible = visible;
+      count.visible = visible;
+      loader.visible = visible && Boolean(item?.resourceName);
+      loader.url = item?.resourceName
+        ? fgui.UIPackage.getItemURL('ui-game', item.resourceName)
+        : null;
+      if (item) {
+        name.text = item.name;
+        count.text = `×${item.count}`;
+      }
+      const fallbackBackground = this.fairyGuiItemFallbackBackgrounds[index];
+      const fallbackLabel = this.fairyGuiItemFallbackLabels[index];
+      const showFallback = visible && !item?.resourceName;
+      fallbackBackground.visible = showFallback;
+      fallbackLabel.visible = showFallback;
+      if (item && showFallback) {
+        const definition = itemById(item.id);
+        fallbackBackground.color = colorFromHex(definition.color);
+        fallbackLabel.text = definition.glyph;
+      }
+    });
+
+    const requirements = fairyGuiOrderRequirements(this.order);
+    this.fairyGuiOrderBoard.getChild('requiredBoxIcon').visible = this.order.box === 'small';
+    this.fairyGuiOrderBoard.getChild('requiredWrapIcon').visible = this.order.wrap === 'bubble';
+    this.fairyGuiOrderBoard.getChild('requiredLabelIcon').visible = this.order.label === 'fragile';
+    this.fairyGuiOrderBoard.getChild('requiredBoxText').text = requirements.box;
+    this.fairyGuiOrderBoard.getChild('requiredWrapText').text = requirements.wrap;
+    this.fairyGuiOrderBoard.getChild('requiredLabelText').text = requirements.label;
+    this.refreshFairyGuiActionHint();
+  }
+
+  private refreshFairyGuiSelectors(): void {
+    if (!this.fairyGuiSelectorPanel) return;
+    const selection = fairyGuiSelectionNames(
+      this.selectedBox,
+      this.selectedWrap,
+      this.selectedLabel,
+    );
+    this.fairyGuiSelectorPanel.getChild('boxName').text = `${selection.box}  ▼`;
+    this.fairyGuiSelectorPanel.getChild('wrapName').text = `${selection.wrap}  ▼`;
+    this.fairyGuiSelectorPanel.getChild('labelName').text = `${selection.label}  ▼`;
+    this.fairyGuiSelectorPanel.getChild('boxIcon').visible = this.selectedBox === 'small';
+    this.fairyGuiSelectorPanel.getChild('wrapIcon').visible = this.selectedWrap === 'bubble';
+    this.fairyGuiSelectorPanel.getChild('labelIcon').visible = this.selectedLabel === 'fragile';
+    if (this.fairyGuiBoxArea) {
+      this.fairyGuiBoxArea.getChild('counterIcon').visible = this.selectedBox === 'small';
+    }
+    const used = usedCapacity(this.contents);
+    const capacity = getBoxCapacity(this.selectedBox);
+    this.refreshFairyGuiActionHint(
+      used > capacity ? `当前商品容量 ${used}/${capacity}，请换大箱或取出商品` : undefined,
+    );
+  }
+
+  private refreshFairyGuiBoxContents(): void {
+    if (!this.fairyGuiBoxArea) return;
+    const entries = (Object.entries(this.contents) as [ItemId, number][]).slice(0, 4);
+    this.fairyGuiBoxArea.getChild('counterLabel').text = `箱内 ${entries.length}/4`;
+    this.fairyGuiBoxLoaders.forEach((loader, index) => {
+      const entry = entries[index];
+      const resourceName = entry ? FAIRYGUI_ITEM_RESOURCE_NAMES[entry[0]] : null;
+      loader.url = resourceName ? fgui.UIPackage.getItemURL('ui-game', resourceName) : null;
+      loader.visible = Boolean(resourceName);
+      const fallbackBackground = this.fairyGuiBoxFallbackBackgrounds[index];
+      const fallbackLabel = this.fairyGuiBoxFallbackLabels[index];
+      const showFallback = Boolean(entry && !resourceName);
+      fallbackBackground.visible = showFallback;
+      fallbackLabel.visible = showFallback;
+      if (entry && showFallback) {
+        const item = itemById(entry[0]);
+        fallbackBackground.color = colorFromHex(item.color);
+        fallbackLabel.text = item.glyph;
+      }
+      this.fairyGuiBoxCountBackgrounds[index].visible = Boolean(entry);
+      this.fairyGuiBoxCountLabels[index].visible = Boolean(entry);
+      this.fairyGuiBoxCountLabels[index].text = entry ? `×${entry[1]}` : '';
+      (this.fairyGuiBoxArea!.getChild(`dot0${index + 1}`) as fgui.GGraph).color = entry
+        ? new Color(255, 139, 50)
+        : new Color(255, 244, 223);
+    });
+  }
+
+  private refreshFairyGuiActionHint(message?: string): void {
+    if (!this.fairyGuiView || !this.order) return;
+    if (message) {
+      this.fairyGuiView.getChild('actionHint').text =
+        `订单 ${`${this.fairyGuiSelectedOrderIndex + 1}`.padStart(2, '0')} · ${message}`;
+      return;
+    }
+    const selection = fairyGuiSelectionNames(
+      this.selectedBox,
+      this.selectedWrap,
+      this.selectedLabel,
+    );
+    this.fairyGuiView.getChild('actionHint').text =
+      `订单 ${`${this.fairyGuiSelectedOrderIndex + 1}`.padStart(2, '0')} · ${this.order.customer}　已选：${selection.box} / ${selection.wrap} / ${selection.label}`;
+  }
+
+  private startLegacyPrototype(): void {
+    this.legacyPrototypeActive = true;
     this.build();
     this.showLevelSelect();
     this.showTutorial();
   }
 
   protected update(dt: number): void {
+    if (this.fairyGuiView && !this.legacyPrototypeActive) {
+      this.updateFairyGuiOrders(dt);
+      return;
+    }
+    if (!this.legacyPrototypeActive) return;
     if (this.gameOver || this.resultOverlay) return;
     if (this.eventSeconds > 0) {
       this.eventSeconds -= dt;
@@ -90,6 +1018,19 @@ export class GameRoot extends Component {
         this.beltItems.splice(i, 1);
       }
     }
+  }
+
+  private updateFairyGuiOrders(dt: number): void {
+    if (this.fairyGuiResultOverlay || this.fairyGuiOrders.length === 0) return;
+    this.fairyGuiConveyorRefreshSeconds -= dt;
+    if (this.fairyGuiConveyorRefreshSeconds <= 0) this.rotateFairyGuiConveyor();
+    this.fairyGuiSecondsByOrder = this.fairyGuiSecondsByOrder.map(
+      (seconds) => Math.max(0, seconds - dt),
+    );
+    const timedOutIndex = fairyGuiFirstExpiredOrderIndex(this.fairyGuiSecondsByOrder);
+    this.secondsLeft = this.fairyGuiSecondsByOrder[this.fairyGuiSelectedOrderIndex] ?? 0;
+    this.refreshFairyGuiOrderTimers();
+    if (timedOutIndex >= 0) this.timeoutFairyGuiOrder(timedOutIndex);
   }
 
   private createCanvas(): void {

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="750,1334">
+  <displayList>
+    <graph id="n0_root" name="background" xy="0,0" size="750,1334" type="rect" lineSize="0" fillColor="#fff3dd">
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <component id="n1_root" name="topHud" src="cc004" fileName="components/TopHudBar.xml" xy="15,30" size="720,72"/>
+    <component id="n2_root" name="sampleCard" src="cc001" fileName="components/PanelCard.xml" xy="32,140" size="686,320"/>
+    <text id="n3_root" name="sampleTitle" xy="72,176" size="606,48" font="ui://rpgcm001ft003" fontSize="40" color="#5a301c" align="center" vAlign="middle" autoSize="shrink" singleLine="true" text="订单与操作区域"/>
+    <text id="n4_root" name="sampleBody" xy="72,244" size="606,132" font="ui://rpgcm001ft001" fontSize="25" color="#70462d" align="center" vAlign="middle" autoSize="shrink" text="这里展示真实文字、数值和状态。&#10;中文不会烘焙进底图。"/>
+    <component id="n5_root" name="primaryButton" src="cc002" fileName="components/ButtonPrimary.xml" xy="32,500" size="686,96">
+      <Button title="封箱发货" titleFontSize="36"/>
+    </component>
+    <component id="n6_root" name="statSample" src="cc003" fileName="components/HudStatItem.xml" xy="265,636" size="220,68"/>
+    <component id="n7_root" name="typography" src="cc005" fileName="components/TypographySpec.xml" xy="32,742" size="686,456"/>
+    <text id="n8_root" name="note" xy="60,1218" size="630,56" font="ui://rpgcm001ft001" fontSize="20" color="#8f674a" align="center" vAlign="middle" autoSize="shrink" text="ui-common 字体与基础组件预览 · 750 × 1334"/>
+  </displayList>
+</component>

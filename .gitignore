@@ -3,6 +3,9 @@
 /profiles/
 /local/
 /build/
+/node_modules/
+/assets/packages/
+/assets/packages.meta
 *.log
 .DS_Store
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="220,68">
+  <displayList>
+    <graph id="n0_stat" name="background" xy="0,0" size="220,68" type="rect" lineSize="3" lineColor="#c67a3a" fillColor="#fffaf0" corner="18">
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <loader id="n1_stat" name="icon" xy="9,7" size="54,54" url="ui://rpgcm001hc003" align="center" vAlign="middle" fill="scale"/>
+    <text id="n2_stat" name="label" xy="67,8" size="70,22" font="ui://rpgcm001ft001" fontSize="18" color="#9a6b42" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="今日目标"/>
+    <text id="n3_stat" name="value" xy="67,27" size="138,34" font="ui://rpgcm001ft002" fontSize="28" color="#4e2e1e" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="3/6"/>
+  </displayList>
+</component>

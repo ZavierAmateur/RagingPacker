@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="686,456">
+  <displayList>
+    <graph id="n0_type" name="background" xy="0,0" size="686,456" type="rect" lineSize="3" lineColor="#d69a62" fillColor="#fffaf0" corner="24">
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <text id="n1_type" name="sectionLabel" xy="28,18" size="630,30" font="ui://rpgcm001ft002" fontSize="20" color="#b15b2a" align="left" vAlign="middle" singleLine="true" text="字体层级 · TYPOGRAPHY"/>
+    <text id="n2_type" name="displayTitle" xy="28,56" size="630,72" font="ui://rpgcm001ft003" fontSize="52" color="#4e2e1e" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="暴躁打包员"/>
+    <text id="n3_type" name="pageTitle" xy="28,139" size="630,52" font="ui://rpgcm001ft002" fontSize="36" color="#5a301c" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="订单与操作区域"/>
+    <text id="n4_type" name="hudValue" xy="28,205" size="630,44" font="ui://rpgcm001ft002" fontSize="30" color="#9c2929" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="今日目标 3/6 · 金币 1,240 · 投诉 0/3"/>
+    <text id="n5_type" name="body" xy="28,266" size="630,78" font="ui://rpgcm001ft001" fontSize="24" color="#70462d" align="left" vAlign="top" autoSize="shrink" text="请按订单选择商品、纸箱、包装和标签。&#10;正文保持清晰稳定，不使用装饰字体。"/>
+    <text id="n6_type" name="caption" xy="28,362" size="630,34" font="ui://rpgcm001ft001" fontSize="18" color="#9a6b42" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="辅助说明 · 剩余时间 28 秒 · 最小字号 18"/>
+    <text id="n7_type" name="rule" xy="28,406" size="630,28" font="ui://rpgcm001ft001" fontSize="18" color="#b15b2a" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="得意黑仅用于大标题；其余界面统一使用思源黑体。"/>
+  </displayList>
+</component>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="750,138">
+  <displayList>
+    <graph id="n0_belt" name="shadow" xy="0,8" size="750,130" type="rect" lineSize="0" fillColor="#38262b2e" corner="18"/>
+    <graph id="n1_belt" name="belt" xy="0,0" size="750,120" type="rect" lineSize="5" lineColor="#263238" fillColor="#3f4b51" corner="18"/>
+    <graph id="n2_belt" name="slat01" xy="145,5" size="4,110" type="rect" lineSize="0" fillColor="#65747a" rotation="8"/>
+    <graph id="n3_belt" name="slat02" xy="300,5" size="4,110" type="rect" lineSize="0" fillColor="#65747a" rotation="8"/>
+    <graph id="n4_belt" name="slat03" xy="455,5" size="4,110" type="rect" lineSize="0" fillColor="#65747a" rotation="8"/>
+    <graph id="n5_belt" name="slat04" xy="610,5" size="4,110" type="rect" lineSize="0" fillColor="#65747a" rotation="8"/>
+    <image id="n6_belt" name="phoneItem" src="gm102" fileName="images/items/item_phone_blue.png" xy="20,-3" size="136,136"/>
+    <image id="n7_belt" name="chargerItem" src="gm103" fileName="images/items/item_charger_white.png" xy="201,-3" size="136,136"/>
+    <image id="n8_belt" name="glassItem" src="gm104" fileName="images/items/item_glass_empty.png" xy="382,-3" size="136,136"/>
+    <image id="n9_belt" name="fishItem" src="gm105" fileName="images/items/item_fish_frozen.png" xy="563,-3" size="136,136"/>
+  </displayList>
+</component>

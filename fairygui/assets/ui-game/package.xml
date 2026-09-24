@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="rpggm001">
+  <resources>
+    <component id="gm001" name="GamePage.xml" path="/" exported="true"/>
+    <image id="gm101" name="scene_community_day_bg.png" path="/images/scene/" exported="true" atlas="alone_npot"/>
+    <image id="gm102" name="item_phone_blue.png" path="/images/items/" exported="true"/>
+    <image id="gm103" name="item_charger_white.png" path="/images/items/" exported="true"/>
+    <image id="gm104" name="item_glass_empty.png" path="/images/items/" exported="true"/>
+    <image id="gm105" name="item_fish_frozen.png" path="/images/items/" exported="true"/>
+    <image id="gm106" name="box_small_closed.png" path="/images/packaging/" exported="true"/>
+    <image id="gm107" name="wrap_bubble_roll.png" path="/images/packaging/" exported="true"/>
+    <image id="gm108" name="label_fragile.png" path="/images/packaging/" exported="true"/>
+    <image id="gm109" name="char_packer_calm.png" path="/images/character/" exported="true"/>
+    <image id="gm110" name="char_packer_tired.png" path="/images/character/" exported="true"/>
+    <image id="gm111" name="char_packer_focused.png" path="/images/character/" exported="true"/>
+    <image id="gm112" name="char_packer_suspicious.png" path="/images/character/" exported="true"/>
+    <image id="gm113" name="char_packer_irritated.png" path="/images/character/" exported="true"/>
+    <image id="gm114" name="char_packer_rage.png" path="/images/character/" exported="true"/>
+    <image id="gm115" name="char_packer_success.png" path="/images/character/" exported="true"/>
+    <image id="gm116" name="char_packer_failed.png" path="/images/character/" exported="true"/>
+    <component id="gm010" name="OrderBoard.xml" path="/components/" exported="true"/>
+    <component id="gm011" name="ConveyorBelt.xml" path="/components/" exported="true"/>
+    <component id="gm012" name="BoxWorkArea.xml" path="/components/" exported="true"/>
+    <component id="gm013" name="SelectorPanel.xml" path="/components/" exported="true"/>
+    <component id="gm014" name="CharacterPortrait.xml" path="/components/" exported="true"/>
+  </resources>
+  <publish name="" path="../assets/resources/packages/ui-game" packageCount="2"/>
+</packageDescription>

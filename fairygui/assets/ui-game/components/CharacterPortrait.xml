@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="212,212" overflow="hidden">
+  <controller name="expression" pages="0,calm,1,tired,2,focused,3,suspicious,4,irritated,5,rage,6,success,7,failed" selected="0"/>
+  <displayList>
+    <image id="n0_character" name="calm" src="gm109" fileName="images/character/char_packer_calm.png" xy="0,-8" size="212,283" touchable="false">
+      <gearDisplay controller="expression" pages="0"/>
+    </image>
+    <image id="n1_character" name="tired" src="gm110" fileName="images/character/char_packer_tired.png" xy="0,-8" size="212,283" touchable="false">
+      <gearDisplay controller="expression" pages="1"/>
+    </image>
+    <image id="n2_character" name="focused" src="gm111" fileName="images/character/char_packer_focused.png" xy="0,-8" size="212,283" touchable="false">
+      <gearDisplay controller="expression" pages="2"/>
+    </image>
+    <image id="n3_character" name="suspicious" src="gm112" fileName="images/character/char_packer_suspicious.png" xy="0,-8" size="212,283" touchable="false">
+      <gearDisplay controller="expression" pages="3"/>
+    </image>
+    <image id="n4_character" name="irritated" src="gm113" fileName="images/character/char_packer_irritated.png" xy="0,-8" size="212,283" touchable="false">
+      <gearDisplay controller="expression" pages="4"/>
+    </image>
+    <image id="n5_character" name="rage" src="gm114" fileName="images/character/char_packer_rage.png" xy="0,-8" size="212,283" touchable="false">
+      <gearDisplay controller="expression" pages="5"/>
+    </image>
+    <image id="n6_character" name="success" src="gm115" fileName="images/character/char_packer_success.png" xy="0,-8" size="212,283" touchable="false">
+      <gearDisplay controller="expression" pages="6"/>
+    </image>
+    <image id="n7_character" name="failed" src="gm116" fileName="images/character/char_packer_failed.png" xy="0,-8" size="212,283" touchable="false">
+      <gearDisplay controller="expression" pages="7"/>
+    </image>
+  </displayList>
+</component>

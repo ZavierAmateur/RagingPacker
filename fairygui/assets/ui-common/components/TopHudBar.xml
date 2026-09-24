@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="720,72">
+  <displayList>
+    <graph id="n0_hud" name="background" xy="0,0" size="720,72" type="rect" lineSize="3" lineColor="#b96a31" fillColor="#fffaf0" corner="20">
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <image id="n1_hud" name="goalIcon" src="hc003" fileName="images/hud/icon_day_goal_star.png" xy="12,8" size="56,56"/>
+    <text id="n2_hud" name="goalValue" xy="72,15" size="112,44" font="ui://rpgcm001ft002" fontSize="30" color="#4e2e1e" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="3/6"/>
+    <graph id="n3_hud" name="dividerLeft" xy="205,12" size="2,48" type="rect" lineSize="0" fillColor="#e7c59c"/>
+    <image id="n4_hud" name="coinIcon" src="hc001" fileName="images/hud/icon_coin.png" xy="224,8" size="56,56"/>
+    <text id="n5_hud" name="coinValue" xy="285,15" size="166,44" font="ui://rpgcm001ft002" fontSize="30" color="#4e2e1e" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="1,240"/>
+    <graph id="n6_hud" name="dividerRight" xy="472,12" size="2,48" type="rect" lineSize="0" fillColor="#e7c59c"/>
+    <image id="n7_hud" name="complaintIcon" src="hc002" fileName="images/hud/icon_complaint.png" xy="490,8" size="56,56"/>
+    <text id="n8_hud" name="complaintValue" xy="552,15" size="150,44" font="ui://rpgcm001ft002" fontSize="30" color="#9c2929" align="left" vAlign="middle" autoSize="shrink" singleLine="true" text="0/3"/>
+  </displayList>
+</component>

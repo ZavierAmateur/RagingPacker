@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="686,96" pivot="0.5,0.5" extention="Button">
+  <controller name="button" pages="0,up,1,down,2,over,3,selectedOver,4,disabled" selected="0"/>
+  <displayList>
+    <graph id="n0_btn" name="shadow" xy="2,7" size="682,89" type="rect" lineSize="0" fillColor="#6b2f1b" corner="30">
+      <gearDisplay controller="button" pages="0,2"/>
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <graph id="n1_btn" name="normal" xy="0,0" size="686,88" type="rect" lineSize="4" lineColor="#8c2e11" fillColor="#ff6826" corner="30">
+      <gearDisplay controller="button" pages="0,2"/>
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <graph id="n2_btn" name="pressed" xy="0,6" size="686,88" type="rect" lineSize="4" lineColor="#7a2710" fillColor="#e84a18" corner="30">
+      <gearDisplay controller="button" pages="1,3"/>
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <graph id="n3_btn" name="disabled" xy="0,4" size="686,88" type="rect" lineSize="3" lineColor="#a89988" fillColor="#cdbfae" corner="30">
+      <gearDisplay controller="button" pages="4"/>
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <text id="n4_btn" name="title" xy="34,13" size="618,62" font="ui://rpgcm001ft002" fontSize="36" color="#ffffff" align="center" vAlign="middle" autoSize="shrink" singleLine="true" strokeColor="#9e3514" strokeSize="2" text="确认">
+      <gearColor controller="button" pages="0,1,2,3,4" values="#ffffff|#ffffff|#ffffff|#ffffff|#88796b" default="#ffffff"/>
+      <relation target="" sidePair="width-width,height-height"/>
+    </text>
+  </displayList>
+  <Button downEffect="scale" downEffectValue="0.96"/>
+</component>

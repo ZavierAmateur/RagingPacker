@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="702,300">
+  <displayList>
+    <graph id="n0_box" name="leftFlap" xy="58,48" size="176,90" pivot="0.5,0.5" rotation="-13" type="rect" lineSize="4" lineColor="#8f5428" fillColor="#e6ad61" corner="10"/>
+    <graph id="n1_box" name="rightFlap" xy="468,48" size="176,90" pivot="0.5,0.5" rotation="13" type="rect" lineSize="4" lineColor="#8f5428" fillColor="#e6ad61" corner="10"/>
+    <graph id="n2_box" name="boxBack" xy="86,28" size="530,186" type="rect" lineSize="5" lineColor="#8f5428" fillColor="#d99a4d" corner="14"/>
+    <graph id="n3_box" name="boxInner" xy="124,55" size="454,118" type="rect" lineSize="4" lineColor="#9c6531" fillColor="#a86c35" corner="10"/>
+    <graph id="n4_box" name="slot01" xy="145,77" size="94,76" type="rect" lineSize="3" lineColor="#f6d39e" fillColor="#b97a3f" corner="8"/>
+    <graph id="n5_box" name="slot02" xy="250,77" size="94,76" type="rect" lineSize="3" lineColor="#f6d39e" fillColor="#b97a3f" corner="8"/>
+    <graph id="n6_box" name="slot03" xy="355,77" size="94,76" type="rect" lineSize="3" lineColor="#f6d39e" fillColor="#b97a3f" corner="8"/>
+    <graph id="n7_box" name="slot04" xy="460,77" size="94,76" type="rect" lineSize="3" lineColor="#f6d39e" fillColor="#b97a3f" corner="8"/>
+    <graph id="n8_box" name="boxFront" xy="86,168" size="530,102" type="rect" lineSize="5" lineColor="#8f5428" fillColor="#e4a557" corner="14"/>
+    <graph id="n9_box" name="counterBg" xy="190,198" size="322,52" type="rect" lineSize="2" lineColor="#c67a3a" fillColor="#fff4df" corner="18"/>
+    <image id="n10_box" name="counterIcon" src="gm106" fileName="images/packaging/box_small_closed.png" xy="202,201" size="46,46"/>
+    <text id="n11_box" name="counterLabel" xy="252,205" size="138,40" font="ui://rpgcm001ft002" fontSize="25" color="#5a301c" align="center" vAlign="middle" singleLine="true" text="箱内 0/4"/>
+    <graph id="n12_box" name="dot01" xy="404,215" size="20,20" type="ellipse" lineSize="3" lineColor="#8f5428" fillColor="#fff4df"/>
+    <graph id="n13_box" name="dot02" xy="430,215" size="20,20" type="ellipse" lineSize="3" lineColor="#8f5428" fillColor="#fff4df"/>
+    <graph id="n14_box" name="dot03" xy="456,215" size="20,20" type="ellipse" lineSize="3" lineColor="#8f5428" fillColor="#fff4df"/>
+    <graph id="n15_box" name="dot04" xy="482,215" size="20,20" type="ellipse" lineSize="3" lineColor="#8f5428" fillColor="#fff4df"/>
+  </displayList>
+</component>

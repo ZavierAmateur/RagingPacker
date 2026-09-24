@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="702,204">
+  <displayList>
+    <graph id="n0_selector" name="background" xy="0,0" size="702,204" type="rect" lineSize="3" lineColor="#b96a31" fillColor="#fffaf0" corner="20"/>
+
+    <graph id="n1_selector" name="boxCard" xy="8,8" size="222,188" type="rect" lineSize="3" lineColor="#d6a257" fillColor="#fffdf7" corner="16"/>
+    <text id="n2_selector" name="boxTitle" xy="20,16" size="198,34" font="ui://rpgcm001ft002" fontSize="24" color="#5a301c" align="center" vAlign="middle" singleLine="true" text="纸箱"/>
+    <image id="n3_selector" name="boxIcon" src="gm106" fileName="images/packaging/box_small_closed.png" xy="62,48" size="108,108"/>
+    <text id="n4_selector" name="boxName" xy="20,150" size="198,28" font="ui://rpgcm001ft001" fontSize="20" color="#70462d" align="center" vAlign="middle" singleLine="true" text="小号箱  ▼"/>
+
+    <graph id="n5_selector" name="wrapCard" xy="240,8" size="222,188" type="rect" lineSize="3" lineColor="#d6a257" fillColor="#fffdf7" corner="16"/>
+    <text id="n6_selector" name="wrapTitle" xy="252,16" size="198,34" font="ui://rpgcm001ft002" fontSize="24" color="#5a301c" align="center" vAlign="middle" singleLine="true" text="包装"/>
+    <image id="n7_selector" name="wrapIcon" src="gm107" fileName="images/packaging/wrap_bubble_roll.png" xy="294,48" size="108,108"/>
+    <text id="n8_selector" name="wrapName" xy="252,150" size="198,28" font="ui://rpgcm001ft001" fontSize="20" color="#70462d" align="center" vAlign="middle" singleLine="true" text="气泡膜  ▼"/>
+
+    <graph id="n9_selector" name="labelCard" xy="472,8" size="222,188" type="rect" lineSize="3" lineColor="#d6a257" fillColor="#fffdf7" corner="16"/>
+    <text id="n10_selector" name="labelTitle" xy="484,16" size="198,34" font="ui://rpgcm001ft002" fontSize="24" color="#5a301c" align="center" vAlign="middle" singleLine="true" text="标签"/>
+    <image id="n11_selector" name="labelIcon" src="gm108" fileName="images/packaging/label_fragile.png" xy="526,48" size="108,108"/>
+    <text id="n12_selector" name="labelName" xy="484,150" size="198,28" font="ui://rpgcm001ft001" fontSize="20" color="#70462d" align="center" vAlign="middle" singleLine="true" text="易碎  ▼"/>
+  </displayList>
+</component>

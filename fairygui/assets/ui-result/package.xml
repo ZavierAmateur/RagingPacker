@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="rpgrs001">
+  <resources>
+    <component id="rs001" name="ResultPage.xml" path="/" exported="true"/>
+  </resources>
+  <publish name="" path="../assets/resources/packages/ui-result"/>
+</packageDescription>

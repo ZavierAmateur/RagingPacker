@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="702,390">
+  <displayList>
+    <graph id="n0_order" name="shadow" xy="4,7" size="694,383" type="rect" lineSize="0" fillColor="#5a673e26" corner="24" touchable="false"/>
+    <graph id="n1_order" name="panel" xy="0,0" size="702,382" type="rect" lineSize="4" lineColor="#b96a31" fillColor="#fffaf0" corner="24"/>
+    <graph id="n2_order" name="clip" xy="305,-17" size="92,42" type="rect" lineSize="4" lineColor="#424b50" fillColor="#c9ced0" corner="10" touchable="false"/>
+    <graph id="n3_order" name="clipHole" xy="338,-8" size="26,20" type="ellipse" lineSize="3" lineColor="#424b50" fillColor="#fff3dd" touchable="false"/>
+
+    <graph id="n4_order" name="ticket01" xy="16,20" size="210,54" type="rect" lineSize="3" lineColor="#d0a578" fillColor="#fffdf7" corner="13"/>
+    <text id="n5_order" name="ticket01No" xy="28,30" size="42,34" font="ui://rpgcm001ft002" fontSize="22" color="#5a301c" align="center" vAlign="middle" singleLine="true" text="01"/>
+    <image id="n6_order" name="ticket01Icon" src="gm102" fileName="images/items/item_phone_blue.png" xy="73,25" size="42,42"/>
+    <graph id="n7_order" name="ticket01Time" xy="126,40" size="82,12" type="rect" lineSize="2" lineColor="#734021" fillColor="#3b2b22" corner="6"/>
+    <graph id="n8_order" name="ticket01TimeFill" xy="128,42" size="58,8" type="rect" lineSize="0" fillColor="#ffd34e" corner="4"/>
+
+    <graph id="n9_order" name="ticket02" xy="246,20" size="210,54" type="rect" lineSize="4" lineColor="#c9572c" fillColor="#ff8b32" corner="13"/>
+    <text id="n10_order" name="ticket02No" xy="258,30" size="42,34" font="ui://rpgcm001ft002" fontSize="22" color="#ffffff" align="center" vAlign="middle" singleLine="true" text="02"/>
+    <image id="n11_order" name="ticket02Icon" src="gm104" fileName="images/items/item_glass_empty.png" xy="303,25" size="42,42"/>
+    <graph id="n12_order" name="ticket02Time" xy="356,40" size="82,12" type="rect" lineSize="2" lineColor="#734021" fillColor="#3b2b22" corner="6"/>
+    <graph id="n13_order" name="ticket02TimeFill" xy="358,42" size="48,8" type="rect" lineSize="0" fillColor="#ffd34e" corner="4"/>
+
+    <graph id="n14_order" name="ticket03" xy="476,20" size="210,54" type="rect" lineSize="3" lineColor="#d0a578" fillColor="#fffdf7" corner="13"/>
+    <text id="n15_order" name="ticket03No" xy="488,30" size="42,34" font="ui://rpgcm001ft002" fontSize="22" color="#5a301c" align="center" vAlign="middle" singleLine="true" text="03"/>
+    <image id="n16_order" name="ticket03Icon" src="gm105" fileName="images/items/item_fish_frozen.png" xy="533,25" size="42,42"/>
+    <graph id="n17_order" name="ticket03Time" xy="586,40" size="82,12" type="rect" lineSize="2" lineColor="#734021" fillColor="#3b2b22" corner="6"/>
+    <graph id="n18_order" name="ticket03TimeFill" xy="588,42" size="24,8" type="rect" lineSize="0" fillColor="#e75353" corner="4"/>
+
+    <graph id="n19_order" name="avatarArea" xy="18,90" size="212,212" type="rect" lineSize="2" lineColor="#efd4ae" fillColor="#fff1d8" corner="20" touchable="false"/>
+    <component id="n20_order" name="characterPortrait" src="gm014" fileName="components/CharacterPortrait.xml" xy="18,90" size="212,212"/>
+
+    <graph id="n27_order" name="itemPhoneBg" xy="246,90" size="210,98" type="rect" lineSize="2" lineColor="#e8caa2" fillColor="#ffffff" corner="15"/>
+    <image id="n28_order" name="itemPhone" src="gm102" fileName="images/items/item_phone_blue.png" xy="254,96" size="82,82"/>
+    <text id="n29_order" name="itemPhoneName" xy="333,105" size="112,32" font="ui://rpgcm001ft002" fontSize="20" color="#4e2e1e" align="center" vAlign="middle" autoSize="shrink" singleLine="true" text="蓝色手机"/>
+    <graph id="n30_order" name="itemPhoneCountBg" xy="383,140" size="48,36" type="ellipse" lineSize="0" fillColor="#ff5a35"/>
+    <text id="n31_order" name="itemPhoneCount" xy="383,140" size="48,36" font="ui://rpgcm001ft002" fontSize="21" color="#ffffff" align="center" vAlign="middle" singleLine="true" text="×1"/>
+
+    <graph id="n32_order" name="itemChargerBg" xy="472,90" size="210,98" type="rect" lineSize="2" lineColor="#e8caa2" fillColor="#ffffff" corner="15"/>
+    <image id="n33_order" name="itemCharger" src="gm103" fileName="images/items/item_charger_white.png" xy="480,96" size="82,82"/>
+    <text id="n34_order" name="itemChargerName" xy="559,105" size="112,32" font="ui://rpgcm001ft002" fontSize="20" color="#4e2e1e" align="center" vAlign="middle" autoSize="shrink" singleLine="true" text="充电器"/>
+    <graph id="n35_order" name="itemChargerCountBg" xy="609,140" size="48,36" type="ellipse" lineSize="0" fillColor="#ff5a35"/>
+    <text id="n36_order" name="itemChargerCount" xy="609,140" size="48,36" font="ui://rpgcm001ft002" fontSize="21" color="#ffffff" align="center" vAlign="middle" singleLine="true" text="×1"/>
+
+    <graph id="n37_order" name="itemGlassBg" xy="246,202" size="210,98" type="rect" lineSize="2" lineColor="#e8caa2" fillColor="#ffffff" corner="15"/>
+    <image id="n38_order" name="itemGlass" src="gm104" fileName="images/items/item_glass_empty.png" xy="254,208" size="82,82"/>
+    <text id="n39_order" name="itemGlassName" xy="333,217" size="112,32" font="ui://rpgcm001ft002" fontSize="20" color="#4e2e1e" align="center" vAlign="middle" autoSize="shrink" singleLine="true" text="玻璃杯"/>
+    <graph id="n40_order" name="itemGlassCountBg" xy="383,252" size="48,36" type="ellipse" lineSize="0" fillColor="#ff5a35"/>
+    <text id="n41_order" name="itemGlassCount" xy="383,252" size="48,36" font="ui://rpgcm001ft002" fontSize="21" color="#ffffff" align="center" vAlign="middle" singleLine="true" text="×1"/>
+
+    <graph id="n42_order" name="itemFishBg" xy="472,202" size="210,98" type="rect" lineSize="2" lineColor="#e8caa2" fillColor="#ffffff" corner="15"/>
+    <image id="n43_order" name="itemFish" src="gm105" fileName="images/items/item_fish_frozen.png" xy="480,208" size="82,82"/>
+    <text id="n44_order" name="itemFishName" xy="559,217" size="112,32" font="ui://rpgcm001ft002" fontSize="20" color="#4e2e1e" align="center" vAlign="middle" autoSize="shrink" singleLine="true" text="冰鲜鱼"/>
+    <graph id="n45_order" name="itemFishCountBg" xy="609,252" size="48,36" type="ellipse" lineSize="0" fillColor="#ff5a35"/>
+    <text id="n46_order" name="itemFishCount" xy="609,252" size="48,36" font="ui://rpgcm001ft002" fontSize="21" color="#ffffff" align="center" vAlign="middle" singleLine="true" text="×1"/>
+
+    <graph id="n47_order" name="requirementsBg" xy="18,316" size="666,50" type="rect" lineSize="2" lineColor="#e7c59c" fillColor="#fff4df" corner="14"/>
+    <image id="n48_order" name="requiredBoxIcon" src="gm106" fileName="images/packaging/box_small_closed.png" xy="38,320" size="42,42"/>
+    <text id="n49_order" name="requiredBoxText" xy="78,325" size="118,32" font="ui://rpgcm001ft001" fontSize="18" color="#5a301c" align="left" vAlign="middle" singleLine="true" text="小号箱"/>
+    <image id="n50_order" name="requiredWrapIcon" src="gm107" fileName="images/packaging/wrap_bubble_roll.png" xy="255,320" size="42,42"/>
+    <text id="n51_order" name="requiredWrapText" xy="295,325" size="118,32" font="ui://rpgcm001ft001" fontSize="18" color="#5a301c" align="left" vAlign="middle" singleLine="true" text="气泡膜"/>
+    <image id="n52_order" name="requiredLabelIcon" src="gm108" fileName="images/packaging/label_fragile.png" xy="472,320" size="42,42"/>
+    <text id="n53_order" name="requiredLabelText" xy="512,325" size="118,32" font="ui://rpgcm001ft001" fontSize="18" color="#5a301c" align="left" vAlign="middle" singleLine="true" text="易碎"/>
+  </displayList>
+</component>
